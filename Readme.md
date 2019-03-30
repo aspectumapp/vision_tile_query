@@ -18,26 +18,45 @@ pip install git+ssh://github.com/eos-vision/eos-vision-tile-query
 Tile query library requires SQLalchemy table model for constructing SQL query 
 #### Flask
 ```text
-import os
-from flask import Flask
-from models import VectorTable
-from sqlalchmey import create_engine
-from eos-vision.tile_query import VisionBaseTileProcessor
+from flask import Flask, render_template
+from sqlalchemy import create_engine
+from vision_tile_query import VisionBaseTileProcessor
+from vision_tile_query import TableManager
 
 app = Flask(__name__)
-app.config.from_object(os.environ['APP_SETTINGS'])
-app.engine = create_engine('postgresql://scott:tiger@localhost:5432/mydatabase')
 # Connect to DB
+app.engine = create_engine('postgresql://postgres@localhost:5432/vision_db')
+table_manager = TableManager(app.engine)
 
 
-@app.route('tile/<table_name>/<z>/<x>/<y>.pbf')
-def hello_name(name):
-    tile = {'x': x, 'y': y, 'z': z}
-    tile_query = VisionBaseTileProcessor.get_tile(tile, VectorTable)
+@app.route('/')
+def map_page():
+    return render_template('main.html')
+
+
+@app.route('/tile/<table>/<zoom>/<x_tile>/<y_tile>.pbf')
+def get_tile(table, x_tile, y_tile, zoom):
+    tile = {'x': x_tile, 'y': y_tile, 'z': zoom}
+
+    # Define model
+    model = table_manager.get_table_model(
+            table, 'public')
+
+    tile_query = VisionBaseTileProcessor().get_tile(
+        tile, model=model.__table__)
+
+    # Exec query and get data
     conn = app.engine.connect()
-    tile = conn.execute(tile_query)
+    query = conn.execute(tile_query)
+    tile = query.fetchone()
     conn.close()
-    return bytes(tile)
+
+    # Make response object
+    response = app.make_response(bytes(tile[0]))
+    response.headers['Content-Type'] = 'application/x-protobuf'
+    response.headers['Access-Control-Allow-Origin'] = "*"
+    return response
+
 
 if __name__ == '__main__':
     app.run()
