@@ -12,7 +12,7 @@ SIMPLIFY_COEFFICIENT = 0.000005
 
 # Default columns names
 GEOMETRY_COL_NAME = 'geometry'
-ID_COL_NAME = 'eos_id'
+ID_COL_NAME = 'id'
 
 # Vector objects types
 POINT_TYPES = ['POINT', 'MULTIPOINT']

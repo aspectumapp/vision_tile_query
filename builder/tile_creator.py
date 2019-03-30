@@ -2,8 +2,10 @@ from abc import ABCMeta, abstractmethod
 
 import mercantile
 import sqlalchemy as sa
+from sqlalchemy.sql.schema import Table
 
-from opensource.tile_query.utils.logger import log
+
+from .utils.logger import log
 from .config import (
     MERCATOR_SRID, WEB_MERCATOR_SRID, RELATIVE_BUFFER_WIDTH,
     GEOMETRY_COL_NAME, ID_COL_NAME, POINT_TYPES, SIMPLIFICATION_TYPES,
@@ -164,18 +166,20 @@ class VisionBaseTileProcessor(AbstractTileProcessor):
         """
         geometry_type = model.columns[GEOMETRY_COL_NAME].type.geometry_type
 
+        # Bt default don't use TABLESAMPLE for polygons and lines
+        table = model
         if self.use_lod and geometry_type in POINT_TYPES:
-            percentage = params['percentage'] if params.get('percentage') \
-                else percentage = 100
+            if params.get('percentage'):
+                percentage = params['percentage']
+            else:
+                percentage = 100
             # Use TABLESAMPLE for getting exact same random data from table
-            table = model.__table__.tablesample(
+            table = model.tablesample(
                 sa.func.bernoulli(percentage),
                 seed=sa.cast(0, sa.Integer)
             )
 
         # Don't use TABLESAMPLE for polygons and lines
-        else:
-            table = model.__table__
 
         sub_query = self.get_mvt_subquery(
             table, tile, tile_bounds, params
@@ -187,7 +191,7 @@ class VisionBaseTileProcessor(AbstractTileProcessor):
             sub_query.alias('q')
         )
 
-    def get_tile(self, tile: dict, model: sa.Table,
+    def get_tile(self, tile: dict, model: Table,
                  params: dict = None) -> sa.sql:
         """
         Main method for get tile in MVT format

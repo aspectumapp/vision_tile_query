@@ -2,11 +2,11 @@ import geoalchemy2.types as geotypes
 import sqlalchemy as sa
 from sqlalchemy.exc import NoSuchColumnError
 
-from opensource.tile_query.config import GEOMETRY_COL_NAME
-from opensource.tile_query.utils.logger import log
-from opensource.tile_query.utils import Base
-from opensource.tile_query.utils.database import (
-    GET_GEOM_COL_TYPE_QUERY, GET_COLUMNS_QUERY, TYPES_MAPPING
+from vision_tile_query.builder.config import GEOMETRY_COL_NAME
+from vision_tile_query.builder.utils.logger import log
+from vision_tile_query.builder.utils import Base
+from vision_tile_query.builder.utils.database import (
+    GET_GEOM_COL_TYPE_QUERY, GET_COLUMNS_QUERY, TYPES_MAPPING, ID_COL_NAME
 )
 
 
@@ -16,10 +16,10 @@ class TableManager:
 
     def __init__(self, engine):
         self.models = {}
-        self.s = engine
+        self.s = engine.connect()
 
     def _get_headers(self, table_name: str, schema: str) -> dict:
-        cursor = self.s.cursor()
+        conn = self.s.connect()
         geom_type_query = GET_GEOM_COL_TYPE_QUERY.format(
             table=table_name, schema=schema
         )
@@ -28,17 +28,16 @@ class TableManager:
             table=table_name, schema=schema
         )
 
-        cursor.execute(geom_type_query)
+        geom_query = conn.execute(geom_type_query)
 
-        geometry_type = cursor.fetchone()
+        geometry_type = geom_query.fetchone()
 
         if not geometry_type:
             geometry_type = 'GEOMETRY'
 
-        cursor.execute(columns_query)
-        columns = cursor.fetchall()
-
-        cursor.close()
+        col_query = conn.execute(columns_query)
+        columns = col_query.fetchall()
+        conn.close()
 
         if not columns:
             raise NoSuchColumnError
@@ -58,14 +57,17 @@ class TableManager:
                 'schema': schema,
                 'extend_existing': True,
             },
+            ID_COL_NAME: sa.Column(
+                ID_COL_NAME, sa.INTEGER, primary_key=True
+            ),
             GEOMETRY_COL_NAME: sa.Column(
-                geotypes.Geometry(geometry_type=geometry_type, srid=4326),
+                geotypes.Geometry(geometry_type=geometry_type[0], srid=4326),
             ),
         })
 
         return headers
 
-    async def get_table_model(self, table_name: str, schema: str):
+    def get_table_model(self, table_name: str, schema: str):
         # Check if model already exists
         model_name = schema + ':' + table_name
         if model_name in self.models:
