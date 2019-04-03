@@ -1,3 +1,4 @@
+import vision_tile_query
 try:
     from setuptools import setup
 except ImportError:
@@ -5,7 +6,7 @@ except ImportError:
 
 setup(
     name='vision_tile_query',
-    version='0.0.1',
+    version=vision_tile_query.version,
     description='Library for creating MVT SQL query',
     long_description=open('Readme.md').read(),
     author='Andrey Sorokin',
