@@ -11,7 +11,7 @@ https://postgis.net/docs/ST_AsMVT.html
 ### Installing
 Use pip with project url
 ```text
-pip install git+ssh://github.com/eos-vision/eos-vision-tile-query
+pip install vision-tile-query
 
 ``` 
 ### Usage examples
