@@ -2,10 +2,10 @@ import geoalchemy2.types as geotypes
 import sqlalchemy as sa
 from sqlalchemy.exc import NoSuchColumnError
 
-from vision_tile_query.builder.config import GEOMETRY_COL_NAME
-from vision_tile_query.builder.utils.logger import log
-from vision_tile_query.builder.utils import Base
-from vision_tile_query.builder.utils.database import (
+from vision_tile_query.config import GEOMETRY_COL_NAME
+from vision_tile_query.utils.logger import log
+from vision_tile_query.utils import Base
+from vision_tile_query.utils.database import (
     GET_GEOM_COL_TYPE_QUERY, GET_COLUMNS_QUERY, TYPES_MAPPING, ID_COL_NAME
 )
 
