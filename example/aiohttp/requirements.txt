@@ -1,7 +1,7 @@
 SQLAlchemy==1.1.15
 mercantile==0.10.0
 geoalchemy2==0.4.0
-vision-tile-query==0.0.2.1
+vision-tile-query==0.0.3
 aiohttp==3.5.4
 aiohttp_jinja2==0.14.0
 jinja2==2.9.6

@@ -3,4 +3,4 @@ SQLAlchemy==1.2.18
 psycopg2==2.7.7
 mercantile==0.10.0
 geoalchemy2==0.4.0
-vision-tile-query==0.0.2.1
+vision-tile-query==0.0.3
