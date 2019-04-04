@@ -57,7 +57,7 @@ async def get_tile(request):
 
 @aiohttp_jinja2.template('main.html')
 async def handle(request):
-    return {'KEY': 'pk.eyJ1IjoiZmFzdGJlYXIiLCJhIjoiY2pjcTlqeGIyMmEwcTMzbnYwNXdxNXFidCJ9.tXsCJNKw0yCRHqngdDrlIw'}
+    return {'KEY': 'YOUR MAPBOX TOKEN'}
 
 
 loop = asyncio.get_event_loop()
