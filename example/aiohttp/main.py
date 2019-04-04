@@ -5,8 +5,7 @@ import aiopg.sa
 from sqlalchemy.engine.url import URL
 from aiohttp import web
 
-from models import VectorTable, VectorPolyTable
-from vision_tile_query import VisionBaseTileProcessor
+from vision_tile_query import VisionBaseTileProcessor, AsyncTableManager
 
 DNS = str(URL(
     database='vision_db',
@@ -18,6 +17,7 @@ DNS = str(URL(
 
 async def init_pg(app):
     app['db'] = await aiopg.sa.create_engine(DNS)
+    app['table_manager'] = AsyncTableManager(app['db'])
 
 
 async def close_pg_connection(app):
@@ -33,12 +33,8 @@ async def get_tile(request):
             'z': int(params.get('z'))}
 
     # Define model
-    if params.get('table') == 'points':
-        model = VectorTable
-    else:
-        # model = table_manager.get_table_model(
-        #    'flask_pol_test', 'public')
-        model = VectorPolyTable
+    model = await app['table_manager'].get_table_model(
+        params.get('table'), 'public')
 
     tile_query = VisionBaseTileProcessor().get_tile(
         tile, model=model.__table__)
