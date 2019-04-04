@@ -16,7 +16,7 @@ class TableManager:
 
     def __init__(self, engine):
         self.models = {}
-        self.s = engine.connect()
+        self.s = engine
 
     def _get_headers(self, table_name: str, schema: str) -> dict:
         conn = self.s.connect()
@@ -39,6 +39,10 @@ class TableManager:
         columns = col_query.fetchall()
         conn.close()
 
+        return self.update_headers(geometry_type, columns, table_name, schema)
+
+    @staticmethod
+    def update_headers(geometry_type, columns, table_name, schema):
         if not columns:
             raise NoSuchColumnError
 
@@ -87,3 +91,42 @@ class TableManager:
         if table_model:
             Base.metadata.remove(table_model.__table__)
             self.models.pop(model_name)
+
+
+class AsyncTableManager(TableManager):
+
+    def __init__(self, engine):
+        super().__init__(engine)
+
+    async def get_table_model(self, table_name: str, schema: str):
+        # Check if model already exists
+        model_name = schema + ':' + table_name
+        if model_name in self.models:
+            return self.models[model_name]
+
+        headers = await self.get_headers(table_name, schema)
+        new_model = type(table_name, (Base,), headers)
+
+        # Store a new table model
+        self.models[model_name] = new_model
+
+        return new_model
+
+    async def get_headers(self, table_name: str, schema: str) -> dict:
+        geom_type_query = GET_GEOM_COL_TYPE_QUERY.format(
+            table=table_name, schema=schema
+        )
+        columns_query = GET_COLUMNS_QUERY.format(
+            table=table_name, schema=schema
+        )
+
+        async with self.s.acquire() as conn:
+            geometry_type = await conn.scalar(geom_type_query)
+
+        if not geometry_type:
+            geometry_type = 'GEOMETRY'
+
+        async with self.s.acquire() as conn:
+            columns = await(await conn.execute(columns_query)).fetchall()
+
+        return self.update_headers(geometry_type, columns, table_name, schema)

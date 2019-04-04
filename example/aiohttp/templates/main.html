@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset='utf-8' />
+<title>Display a map</title>
+<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.1/mapbox-gl.js'></script>
+<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.1/mapbox-gl.css' rel='stylesheet' />
+<style>
+body { margin:0; padding:0; }
+#map { position:absolute; top:0; bottom:0; width:100%; }
+</style>
+</head>
+<body>
+
+<div id='map'></div>
+<script>
+mapboxgl.accessToken = '{{KEY}}';
+var source = "https://d25uarhxywzl1j.cloudfront.net/v0.1/{z}/{x}/{y}.mvt"
+var source_pbf = "http://127.0.0.1:8080/tile/points/{z}/{x}/{y}.pbf"
+var poly_pbf = "http://127.0.0.1:8080/tile/poly/{z}/{x}/{y}.pbf"
+var map = new mapboxgl.Map({
+container: 'map', // container id
+style: 'mapbox://styles/mapbox/streets-v11', // stylesheet location
+center: [-74.50, 40], // starting position [lng, lat]
+zoom: 9 // starting zoom
+});
+
+map.on('load', function() {
+// Add Mapillary sequence layer.
+// https://www.mapillary.com/developer/tiles-documentation/#sequence-layer
+    map.addLayer({
+        "id": "mapillary",
+        "type": "line",
+        "source": {
+            "type": "vector",
+            "tiles": [source],
+        "minzoom": 6,
+        "maxzoom": 14
+        },
+        "source-layer": "mapillary-sequences",
+        "layout": {
+            "line-cap": "round",
+            "line-join": "round"
+        },
+        "paint": {
+            "line-opacity": 0.6,
+            "line-color": "rgb(53, 175, 109)",
+            "line-width": 2
+        }
+    }, 'waterway-label');
+    map.addLayer({
+        "id": "points",
+        "type": "circle",
+        "source": {
+            "type": "vector",
+            "tiles": [source_pbf],
+        "minzoom": 1,
+        "maxzoom": 18
+        },
+        "source-layer": "layer",
+        "paint": {
+            'circle-radius': {
+                'base': 1.75,
+                'stops': [[12, 2], [22, 180]]
+            },
+            'circle-color': '#4f41e5'
+        }
+    }, 'waterway-label');
+    map.addLayer({
+        "id": "poly",
+        "type": "fill",
+        "source": {
+            "type": "vector",
+            "tiles": [poly_pbf],
+        "minzoom": 1,
+        "maxzoom": 18
+        },
+        "source-layer": "layer",
+        "paint": {
+            'fill-color': '#44d3e5',
+            'fill-opacity': 0.8
+        }
+    }, 'waterway-label');
+});
+
+map.addControl(new mapboxgl.NavigationControl());
+</script>
+
+</body>
+</html>
