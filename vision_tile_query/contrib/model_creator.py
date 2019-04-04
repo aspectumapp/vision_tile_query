@@ -16,7 +16,7 @@ class TableManager:
 
     def __init__(self, engine):
         self.models = {}
-        self.s = engine.connect()
+        self.s = engine
 
     def _get_headers(self, table_name: str, schema: str) -> dict:
         conn = self.s.connect()
