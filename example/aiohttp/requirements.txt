@@ -1,4 +1,4 @@
-SQLAlchemy==1.1.15
+SQLAlchemy==1.3.3
 mercantile==0.10.0
 geoalchemy2==0.4.0
 vision-tile-query==0.0.3
