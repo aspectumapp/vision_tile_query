@@ -140,7 +140,24 @@ app.on_cleanup.append(close_pg_connection)
 web.run_app(app)
 ```
 
+### Settings
+Main module settings are:
+  - use_simplification - simplify geometry of polygons and lines. 
+  By default False
+  - use_lod - use LOD for points objects, don't select all object on 
+  world(1-7) zoom levels. By default False
+  - use_clip_by_tile - usefull for multipolygons, this attribute enables 
+  postgis `ST_ClipByBox2D`. By default True
+Also you can configure additional settings such as:
+  - percentage - number value from 0 to 100. How much percent library have 
+  to use in postgres TABLESAMPLE function
+  - simplify - library uses postgis function ST_Simplify. Simplify provide 
+  square size depending to you coordinate system
+
+### Tests
+  For run test on your machine use `python pytest -v`
+
 ### Requirements
- - mercantile==0.10.0
- - SQLAlchemy==1.1.11
- - geoalchemy2==0.4.0
+ - mercantile>=0.10.0
+ - SQLAlchemy>=1.1.11
+ - geoalchemy2>=0.4.0
