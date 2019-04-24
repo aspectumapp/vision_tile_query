@@ -1,5 +1,5 @@
 import pytest
-from vision_tile_query import VisionBaseTileProcessor
+from vision_tile_query.tile_creator import VisionBaseTileProcessor
 import geoalchemy2.types as geotypes
 import sqlalchemy as sa
 from sqlalchemy.ext.declarative import declarative_base

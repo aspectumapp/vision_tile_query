@@ -34,3 +34,107 @@ def test_query_with_poly_data(tileprocessor, polytable, tile):
         tile, model=polytable)
 
     assert isinstance(tile_query, sa.sql.selectable.Select)
+
+
+@pytest.mark.parametrize("tile", TILES_SET)
+def test_query_with_params_use_lod(tileprocessor, vectortable, tile):
+    tileprocessor.use_lod = True
+    tile_query = tileprocessor.get_tile(
+        tile, model=vectortable)
+
+    assert isinstance(tile_query, sa.sql.selectable.Select)
+
+
+@pytest.mark.parametrize("tile", TILES_SET)
+def test_query_with_params_lod_percentages_0(tileprocessor, vectortable, tile):
+    params = {'percentage': 0}
+    tileprocessor.use_lod = True
+    tile_query = tileprocessor.get_tile(
+        tile, model=vectortable, params=params)
+
+    assert isinstance(tile_query, sa.sql.selectable.Select)
+
+
+@pytest.mark.parametrize("tile", TILES_SET)
+def test_query_with_params_lod_percentages_50(
+        tileprocessor, vectortable, tile):
+    tileprocessor.use_lod = True
+    params = {'percentage': 50}
+    tile_query = tileprocessor.get_tile(
+        tile, model=vectortable, params=params)
+
+    assert isinstance(tile_query, sa.sql.selectable.Select)
+
+
+@pytest.mark.parametrize("tile", TILES_SET)
+def test_query_with_params_lod_percentages_100(
+        tileprocessor, vectortable, tile):
+    tileprocessor.use_lod = True
+    params = {'percentage': 100}
+    tile_query = tileprocessor.get_tile(
+        tile, model=vectortable, params=params)
+
+    assert isinstance(tile_query, sa.sql.selectable.Select)
+
+
+@pytest.mark.parametrize("tile", TILES_SET)
+def test_query_with_params_enable_simplificastion(
+        tileprocessor, vectortable, tile):
+    tileprocessor.use_simplification = True
+    tile_query = tileprocessor.get_tile(
+        tile, model=vectortable)
+
+    assert isinstance(tile_query, sa.sql.selectable.Select)
+
+
+@pytest.mark.parametrize("tile", TILES_SET)
+def test_query_with_params_enable_simplificastion(
+        tileprocessor, vectortable, tile):
+    tileprocessor.use_simplification = True
+    tile_query = tileprocessor.get_tile(
+        tile, model=vectortable)
+
+    assert isinstance(tile_query, sa.sql.selectable.Select)
+
+
+@pytest.mark.parametrize("tile", TILES_SET)
+def test_query_with_params_enable_simplificastion_0(
+        tileprocessor, vectortable, tile):
+    tileprocessor.use_simplification = True
+    params = {'simplify': 0.00001}
+    tile_query = tileprocessor.get_tile(
+        tile, model=vectortable, params=params)
+
+    assert isinstance(tile_query, sa.sql.selectable.Select)
+
+
+@pytest.mark.parametrize("tile", TILES_SET)
+def test_query_with_params_enable_simplificastion_50(
+        tileprocessor, vectortable, tile):
+    tileprocessor.use_simplification = True
+    params = {'simplify': 0.00005}
+    tile_query = tileprocessor.get_tile(
+        tile, model=vectortable, params=params)
+
+    assert isinstance(tile_query, sa.sql.selectable.Select)
+
+
+@pytest.mark.parametrize("tile", TILES_SET)
+def test_query_with_params_enable_simplificastion_100(
+        tileprocessor, vectortable, tile):
+    tileprocessor.use_simplification = True
+    params = {'simplify': 0.0001}
+    tile_query = tileprocessor.get_tile(
+        tile, model=vectortable, params=params)
+
+    assert isinstance(tile_query, sa.sql.selectable.Select)
+
+
+@pytest.mark.parametrize("tile", TILES_SET)
+def test_query_disable_clip_to_tile(
+        tileprocessor, vectortable, tile):
+    tileprocessor.use_clip_by_tile = False
+    tile_query = tileprocessor.get_tile(
+        tile, model=vectortable)
+
+    assert isinstance(tile_query, sa.sql.selectable.Select)

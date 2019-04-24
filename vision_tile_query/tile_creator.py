@@ -27,7 +27,7 @@ class AbstractTileProcessor(metaclass=ABCMeta):
 
     @abstractmethod
     def construct_selection_columns(self, model, envelope, envelope_extended,
-                                    tile_area, zoom):
+                                    tile_area, zoom, params):
         raise NotImplementedError()
 
     @abstractmethod
@@ -80,9 +80,9 @@ class AbstractTileProcessor(metaclass=ABCMeta):
         return sa.func.ST_MakeEnvelope(*tuple(bounds), MERCATOR_SRID)
 
     @staticmethod
-    def get_simplify_coefficient(zoom):
+    def get_simplify_coefficient(zoom, coefficient=SIMPLIFY_COEFFICIENT):
         multiplier = 99 * ((7 / 10) ** zoom) + 1
-        return SIMPLIFY_COEFFICIENT / multiplier
+        return coefficient / multiplier
 
 
 class VisionBaseTileProcessor(AbstractTileProcessor):
@@ -107,6 +107,7 @@ class VisionBaseTileProcessor(AbstractTileProcessor):
             envelope_extended=envelope_extended,
             tile_area=tile_area,
             zoom=int(tile.get('z')),
+            params=params
         )
 
         where_clause = sa.and_(
@@ -120,14 +121,14 @@ class VisionBaseTileProcessor(AbstractTileProcessor):
 
         return sub_query
 
-    def geom_simplify(self, geom_column, tile_area, zoom):
+    def geom_simplify(self, geom_column, tile_area, zoom, coefficient):
 
-        simplify = self.get_simplify_coefficient(zoom)
+        simplify = self.get_simplify_coefficient(zoom, coefficient)
         return sa.func.ST_SimplifyVW(
             geom_column, simplify * tile_area
         )
 
-    def select_geom_col(self, model, envelope_extended, tile_area, zoom):
+    def select_geom_col(self, model, envelope_extended, tile_area, zoom, params):
         geom_column = model.columns[GEOMETRY_COL_NAME]
         geometry_type = geom_column.type.geometry_type
 
@@ -136,15 +137,16 @@ class VisionBaseTileProcessor(AbstractTileProcessor):
                 geom_column, envelope_extended)
 
         if self.use_simplification and geometry_type in SIMPLIFICATION_TYPES:
-            geom_column = self.geom_simplify(geom_column, tile_area, zoom)
+            coef = params.get('simplify') if params else None
+            geom_column = self.geom_simplify(geom_column, tile_area, zoom, coef)
 
         return geom_column
 
     def construct_selection_columns(self, model, envelope, envelope_extended,
-                                    tile_area, zoom):
+                                    tile_area, zoom, params):
 
         geom_sel_column = self.select_geom_col(
-            model, envelope_extended, tile_area, zoom
+            model, envelope_extended, tile_area, zoom, params
         )
 
         columns_to_select = [
@@ -169,7 +171,7 @@ class VisionBaseTileProcessor(AbstractTileProcessor):
         # Bt default don't use TABLESAMPLE for polygons and lines
         table = model
         if self.use_lod and geometry_type in POINT_TYPES:
-            if params.get('percentage'):
+            if params and params.get('percentage'):
                 percentage = params['percentage']
             else:
                 percentage = 100
