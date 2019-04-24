@@ -15,27 +15,57 @@ from .config import (
 
 class AbstractTileProcessor(metaclass=ABCMeta):
     """
-    Abstract class for tile processor with call method
+    Abstract class for tile processor
+    use_simplification - simplify polygon, lines geometry
+    use_lod - simplify point objects depending on zoom level
+    use_clip_by_tile - clip geometry by tile bbox
     """
     use_simplification = False
     use_lod = False
     use_clip_by_tile = True
 
     @abstractmethod
-    def get_tile(self, tile: dict, model: sa.table, params: dict) -> sa.sql:
+    def get_tile(self, tile: dict, model: Table, params: dict) -> sa.sql:
+        """Main method for getting tile SQL query"""
         raise NotImplementedError()
 
     @abstractmethod
     def construct_selection_columns(self, model, envelope, envelope_extended,
                                     tile_area, zoom, params):
+        """
+        Construct column list for select
+        :param model:
+        :param envelope:
+        :param envelope_extended:
+        :param tile_area:
+        :param zoom:
+        :param params:
+        :return:
+        """
         raise NotImplementedError()
 
     @abstractmethod
     def get_geometry_as_mvt(self, model, tile, tile_bounds, params):
+        """
+        Construct ST_AsMVT query using model and request params
+        :param model:
+        :param tile:
+        :param tile_bounds:
+        :param params:
+        :return:
+        """
         raise NotImplementedError()
 
     @abstractmethod
     def get_mvt_subquery(self, model, tile, tile_bounds, params):
+        """
+        Construct ST_AsMVTGeom subquery
+        :param model:
+        :param tile:
+        :param tile_bounds:
+        :param params:
+        :return:
+        """
         raise NotImplementedError()
 
     @staticmethod
@@ -77,10 +107,21 @@ class AbstractTileProcessor(metaclass=ABCMeta):
 
     @staticmethod
     def get_mercator_envelope(bounds):
+        """
+        Return tile polygon for bbox using mercator SRID(4326)
+        :param bounds:
+        :return:
+        """
         return sa.func.ST_MakeEnvelope(*tuple(bounds), MERCATOR_SRID)
 
     @staticmethod
     def get_simplify_coefficient(zoom, coefficient=SIMPLIFY_COEFFICIENT):
+        """
+        Function for construct simplify value depenging of zoom level
+        :param zoom:
+        :param coefficient:
+        :return: int
+        """
         multiplier = 99 * ((7 / 10) ** zoom) + 1
         return coefficient / multiplier
 
