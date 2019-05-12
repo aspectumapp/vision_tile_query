@@ -1,0 +1,10 @@
+version: '3'
+services:
+  test-db:
+    image: mdillon/postgis:9.6-alpine
+    ports:
+      - "5435:5432"
+    expose:
+      - "5435"
+    environment:
+      - POSTGRES_DB=test-db

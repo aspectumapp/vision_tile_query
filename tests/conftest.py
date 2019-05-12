@@ -2,6 +2,7 @@ import pytest
 from vision_tile_query.tile_creator import VisionBaseTileProcessor
 import geoalchemy2.types as geotypes
 import sqlalchemy as sa
+from subprocess import run
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -27,6 +28,17 @@ class VectorPolyTable(Base):
     name = sa.Column(sa.Text)
     description= sa.Column(sa.Text)
     geometry = sa.Column(geotypes.Geometry(geometry_type='POLYGON', srid=4326))
+
+
+@pytest.fixture(scope='session')
+def db_session(request):
+    run('docker-compose up -d'.split())
+
+    def _db_session_fin():
+        res = run('docker-compose down --rmi local'.split())
+        print(res)
+
+    request.addfinalizer(_db_session_fin)
 
 
 @pytest.fixture

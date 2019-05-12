@@ -18,7 +18,7 @@ setup(
     install_requires=[
         'SQLAlchemy', 'mercantile', 'geoalchemy2'
     ],
-    license='Unlicense',
+    license='Mit License',
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
